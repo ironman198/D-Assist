@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.samples.vision.face.sleepAlert.ui.camera.GraphicOverlay;
 import com.google.android.gms.vision.face.Face;
@@ -71,10 +72,12 @@ class FaceGraphic extends GraphicOverlay.Graphic {
     private float mFaceHappiness;
     Timer timerr ;
     int eyesClosedCounter ;
+    int DisplayMsgCounter;
     boolean rightEyeClosed= false;
     boolean leftEyeClosed = false;
     boolean musicStopped  = true;
     AssetManager am;
+    TextView tv ;
 
 
     FaceGraphic(GraphicOverlay overlay) {
@@ -130,12 +133,13 @@ void stopMusic()
     }
 }
 
-    void addMedianButtion(MediaPlayer mp,Button btn,AssetManager am,Context ctx)
+    void addMedianButtion(MediaPlayer mp,Button btn,AssetManager am,Context ctx,TextView tv)
     {
         this.player = mp ;
         this.blackButton = btn ;
         this.am = am ;
         this.ctx = ctx ;
+        this.tv = tv ;
         AssetFileDescriptor afd = null;
         try {
             afd = am.openFd("Song.mp3");
@@ -159,17 +163,20 @@ void stopMusic()
         }
         boolean left_eye_closed = false;
         boolean right_eye_closed = false;
+        boolean landMark4_found = false ;
+        boolean landMark10_found = false;
         for (Landmark landmark : this.mFace.getLandmarks()) {
             float px;
             float py;
             if (landmark.getType() == 4) {
+                landMark4_found = true;
                 System.out.println("Srini with value of face right eye" + face.getIsLeftEyeOpenProbability());
                 System.out.println("Srini with value of face position x eye" + landmark.getPosition().x);
                 System.out.println("Srini with value of face position y eye" + landmark.getPosition().y);
                 if (face.getIsLeftEyeOpenProbability()< 0.6f)
                 {
-                    px = landmark.getPosition().x;
-                    py = landmark.getPosition().y;
+                    px = translateX(landmark.getPosition().x);
+                    py = translateY(landmark.getPosition().y);
                     this.LeftEyeBrush.setColor(-1);
 //                canvas.drawCircle((float) this.mFaceArray[i].leftEye.x, (float) this.mFaceArray[i].leftEye.y, 21.0f, this.LeftEyeBrush);
                     canvas.drawCircle(px, py, 21.0f, LeftEyeBrush);
@@ -184,8 +191,8 @@ void stopMusic()
                 }
                 else
                 {
-                    px = landmark.getPosition().x;
-                    py = landmark.getPosition().y;
+                    px = translateX(landmark.getPosition().x);
+                    py = translateY(landmark.getPosition().y);
                     this.LeftEyeBrush.setColor(-1);
 //                canvas.drawCircle((float) this.mFaceArray[i].leftEye.x, (float) this.mFaceArray[i].leftEye.y, 21.0f, this.LeftEyeBrush);
                     canvas.drawCircle(px, py, 5.0f, LeftEyeBrush);
@@ -200,13 +207,14 @@ void stopMusic()
 
 
             } else if (landmark.getType() == 10) {
+                landMark10_found = true ;
                 if (face.getIsRightEyeOpenProbability()<0.6f)
                 {
-                    px = translateX(landmark.getPosition().y);
-                    py = translateY(landmark.getPosition().x);
+                    px = translateX(landmark.getPosition().x);
+                    py = translateY(landmark.getPosition().y);
                     this.LeftEyeBrush.setColor(-1);
 //                canvas.drawCircle((float) this.mFaceArray[i].leftEye.x, (float) this.mFaceArray[i].leftEye.y, 21.0f, this.LeftEyeBrush);
-                    canvas.drawCircle(py, px, 21.0f, LeftEyeBrush);
+                    canvas.drawCircle(px, py, 21.0f, LeftEyeBrush);
                     right_eye_closed = true ;
 
                 }
@@ -216,7 +224,7 @@ void stopMusic()
                     py = translateY(landmark.getPosition().y);
                     this.LeftEyeBrush.setColor(-1);
 //                canvas.drawCircle((float) this.mFaceArray[i].leftEye.x, (float) this.mFaceArray[i].leftEye.y, 21.0f, this.LeftEyeBrush);
-                    canvas.drawCircle(py, px, 5.0f, LeftEyeBrush);
+                    canvas.drawCircle(px, py, 5.0f, LeftEyeBrush);
 
                 }
             }
@@ -249,6 +257,22 @@ void stopMusic()
                 startMusic();
                 eyesClosedCounter = 0;
             }
+        }
+        if (landMark10_found == false && landMark4_found == false)
+        {
+            DisplayMsgCounter = DisplayMsgCounter + 1 ;
+                    if(DisplayMsgCounter > 4)
+                    {
+                        tv.setText("Please Set The Position");
+                        tv.setVisibility(View.VISIBLE);
+                        DisplayMsgCounter = 0;
+                    }
+
+        }
+        if (landMark10_found == true && landMark4_found == true)
+        {
+
+            tv.setVisibility(View.INVISIBLE);
         }
     }
     public void startMusic()

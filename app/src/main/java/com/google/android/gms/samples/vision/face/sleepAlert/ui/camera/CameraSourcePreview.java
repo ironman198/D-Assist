@@ -17,13 +17,16 @@ package com.google.android.gms.samples.vision.face.sleepAlert.ui.camera;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
 import com.google.android.gms.common.images.Size;
+import com.google.android.gms.samples.vision.face.sleepAlert.DAssistActivity;
 import com.google.android.gms.vision.CameraSource;
 
 import java.io.IOException;
@@ -124,8 +127,9 @@ public class CameraSourcePreview extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int width = 960;
-        int height = 540;
+
+        int width = DAssistActivity.height;
+        int height = DAssistActivity.width;
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
 //            if (size != null) {
@@ -148,11 +152,11 @@ public class CameraSourcePreview extends ViewGroup {
         int childWidth = layoutWidth;
         int childHeight = (int)(((float) layoutWidth / (float) width) * height);
 
-        // If height is too tall using fit width, does fit height instead.
-        if (childHeight > layoutHeight) {
-            childHeight = layoutHeight;
-            childWidth = (int)(((float) layoutHeight / (float) height) * width);
-        }
+//        // If height is too tall using fit width, does fit height instead.
+//        if (childHeight > layoutHeight) {
+//            childHeight = layoutHeight;
+//            childWidth = (int)(((float) layoutHeight / (float) height) * width);
+//        }
 
         for (int i = 0; i < getChildCount(); ++i) {
             getChildAt(i).layout(0, 0, childWidth, childHeight);

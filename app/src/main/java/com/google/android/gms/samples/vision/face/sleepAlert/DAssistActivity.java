@@ -24,16 +24,24 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -51,17 +59,25 @@ import java.io.IOException;
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class DAssistActivity extends AppCompatActivity {
+public final class DAssistActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener
+{
     private static final String TAG = "FaceTracker";
 
     private CameraSource mCameraSource = null;
-
+    public static int width;
+    public static int height ;
     private CameraSourcePreview mPreview;
     private GraphicOverlay mGraphicOverlay;
     Button exitButton;
     Button jumbleButton;
-MediaPlayer mp;
+    RelativeLayout layout;
+    MediaPlayer mp;
+    TextView tv;
+    CameraSourcePreview sc;
+    NavigationView navigationView;
      FaceGraphic faceGraphic;
+    GraphicOverlay go;
+    int  checked = 1;
     private static final int RC_HANDLE_GMS = 9001;
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
@@ -83,6 +99,10 @@ MediaPlayer mp;
         this.jumbleButton = (Button)findViewById(R.id.Button01);
         this.exitButton = (Button)findViewById(R.id.button);
         this.mp= new MediaPlayer();
+        this.tv = (TextView)findViewById(R.id.DisplayMsg);
+        this.layout = (RelativeLayout)findViewById(R.id.topLayout);
+         this.sc =(CameraSourcePreview)findViewById(R.id.preview);
+        this.go = (GraphicOverlay)findViewById(R.id.faceOverlay);
         AssetManager am = getApplicationContext().getAssets();
         AssetFileDescriptor afd = null;
         try {
@@ -101,6 +121,44 @@ MediaPlayer mp;
         } else {
             requestCameraPermission();
         }
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(final MenuItem menuItem) {
+                System.out.println("Srini in onNavigationItemSelected part");
+                // Handle navigation view item clicks here.
+                int id = menuItem.getItemId();
+
+
+
+                if (id == R.id.nav_slideshow) {
+                    // Handle the camera action
+                } else if (id == R.id.nav_manage) {
+
+                }else if(id == R.id.nav_manage_toggle){
+
+
+                    if(checked == 0)
+                    {
+                        go.setBackgroundColor(Color.TRANSPARENT);
+                        checked = 1;
+                    }
+                    else
+                    {
+                        go.setBackgroundColor(Color.BLUE);
+                        checked = 0;
+
+                    }
+
+
+                }
+
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+                return true;
+            }
+
+        });
     }
 
     /**
@@ -165,10 +223,13 @@ MediaPlayer mp;
         Display display = getWindowManager().getDefaultDisplay();
         Point screenSize = new Point();
         display.getSize(screenSize);
+        this.width = screenSize.x;
+        this.height = screenSize.y;
+
         System.out.println(" Srini with size" + screenSize.x);
         System.out.println(" Srini with size"+screenSize.y);
         mCameraSource = new CameraSource.Builder(context, detector)
-                .setRequestedPreviewSize(960, 540)
+                .setRequestedPreviewSize(screenSize.x, screenSize.y)
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
                 .setRequestedFps(30.0f)
                 .build();
@@ -283,6 +344,40 @@ MediaPlayer mp;
         }
     }
 
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        System.out.println("Srini in onNavigationItemSelected part");
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+
+
+        if (id == R.id.nav_slideshow) {
+            // Handle the camera action
+        } else if (id == R.id.nav_manage) {
+
+        }else if(id == R.id.nav_manage_toggle){
+            System.out.println("Srini in toggle part");
+            ToggleButton tb = (ToggleButton)item ;
+            boolean checked = tb.isChecked();
+            if(checked)
+            {
+                layout.setBackgroundColor(Color.BLUE);
+            }
+            else
+            {
+                layout.setBackgroundColor(Color.GREEN);
+            }
+
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+
+    }
+
     //==============================================================================================
     // Graphic Face Tracker
     //==============================================================================================
@@ -319,7 +414,7 @@ MediaPlayer mp;
 //            } catch (IOException e) {
 //                e.printStackTrace();
 //            }
-            mFaceGraphic.addMedianButtion(mp,jumbleButton,am,getApplicationContext());
+            mFaceGraphic.addMedianButtion(mp,jumbleButton,am,getApplicationContext(),tv);
             faceGraphic = mFaceGraphic ;
         }
         /**
